@@ -1,5 +1,5 @@
 [package]
-name = "rust-clicker"
+name = "auto-clicker"
 version = "0.1.0"
 edition = "2021"
 

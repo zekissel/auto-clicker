@@ -21,6 +21,7 @@ fn main () {
 
     bind_key(Keyboard::G, Action::handle_kb(|_| toggle() ));
     bind_key(Keyboard::Q, Action::handle_kb(|_| std::process::exit(0) ));
+    println!("Use the <G> key to start/stop clicker. \nUse the <Q> key to exit to terminal.");
 
     loop {
 

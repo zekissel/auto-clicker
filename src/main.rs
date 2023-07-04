@@ -71,7 +71,7 @@ fn main () {
         ui.window("Auto-Clicker")
             .size([500.0, 360.0], Condition::FirstUseEver)
             .build(|| {
-                ui.text_wrapped("Use your keyboard to start/stop clicking when this window is not in focus");
+                ui.text_wrapped("Use the 'G' key to start/stop clicking when this window is not in focus");
                 if ui.button(start[value]) || ui.is_key_pressed(Key::G) {
                     value += 1;
                     value %= 2;
@@ -105,7 +105,7 @@ fn main () {
                     mouse_pos[0], mouse_pos[1]
                 ));
 
-                if ui.button("Quit") || ui.is_key_pressed(Key::Q) {
+                if ui.button("Quit (Q)") || ui.is_key_pressed(Key::Q) {
                     std::process::exit(0);
                 }
             });

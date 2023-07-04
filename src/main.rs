@@ -12,6 +12,7 @@ extern crate lazy_static;
 lazy_static! {
     static ref ACTIVE: RwLock<bool> = RwLock::new(false);
     static ref BUTTON: RwLock<bool> = RwLock::new(true);
+    static ref DELAY: RwLock<u64> = RwLock::new(1);
 }
 
 
@@ -20,6 +21,7 @@ fn click () {
     toggle();
 
     let side: bool = BUTTON.read().unwrap().to_owned();
+    let delay: u64 = DELAY.read().unwrap().to_owned();
 
     while ACTIVE.read().unwrap().to_owned() {
 
@@ -29,8 +31,7 @@ fn click () {
         }
         else { mki::Mouse::release(&mki::Mouse::Right); }
 
-        if side { thread::sleep(Duration::from_millis(1)) } 
-        else { thread::sleep(Duration::from_millis(500)) }
+        thread::sleep(Duration::from_millis(delay));
     }
 }
 
@@ -49,10 +50,13 @@ fn toggle_button () {
 fn main () {
 
     let system = support::init(file!());
+
     let mut value = 0;
     let start = ["Start(G)", "Stop(G)"];
     let mut value2 = 0;
     let button = ["Left Click", "Right Click"];
+
+    let mut delay_ms: i32 = 1;
 
     bind_key(Keyboard::G, Action::handle_kb(|_| { click() } ));
     bind_key(Keyboard::Q, Action::handle_kb(|_| std::process::exit(0) ));
@@ -64,7 +68,7 @@ fn main () {
             .size([500.0, 360.0], Condition::FirstUseEver)
             .build(|| {
                 ui.text_wrapped("Use your keyboard to start/stop clicking when this window is not in focus");
-                if ui.button(start[value]) {
+                if ui.button(start[value]) || ui.is_key_pressed(Key::G) {
                     value += 1;
                     value %= 2;
                     click();
@@ -79,11 +83,21 @@ fn main () {
 
                 ui.separator();
 
+                if ui.input_int("Delay in ms: ", &mut delay_ms).build() {
+                    if delay_ms < 1 { delay_ms = 1 }
+                    let mut new_del = DELAY.write().unwrap();
+                    *new_del = delay_ms as u64;
+                }
+
                 let mouse_pos = ui.io().mouse_pos;
                 ui.text(format!(
                     "Mouse Position: ({:.1},{:.1})",
                     mouse_pos[0], mouse_pos[1]
                 ));
+
+                if ui.button("Quit") || ui.is_key_pressed(Key::Q) {
+                    std::process::exit(0);
+                }
             });
     });
     

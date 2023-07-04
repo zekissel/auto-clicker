@@ -13,6 +13,7 @@ lazy_static! {
     static ref ACTIVE: RwLock<bool> = RwLock::new(false);
     static ref BUTTON: RwLock<bool> = RwLock::new(true);
     static ref DELAY: RwLock<u64> = RwLock::new(1);
+    static ref REPEAT: RwLock<u32> = RwLock::new(1);
 }
 
 
@@ -20,16 +21,18 @@ fn click () {
 
     toggle();
 
-    let side: bool = BUTTON.read().unwrap().to_owned();
+    let button: bool = BUTTON.read().unwrap().to_owned();
     let delay: u64 = DELAY.read().unwrap().to_owned();
+    let repeat: u32 = REPEAT.read().unwrap().to_owned();
 
     while ACTIVE.read().unwrap().to_owned() {
 
-        if side {
-            mki::Mouse::release(&mki::Mouse::Left);
-            mki::Mouse::release(&mki::Mouse::Left); 
+        for _i in 0..repeat {
+            match button {
+                true => { mki::Mouse::release(&mki::Mouse::Left); }
+                false => { mki::Mouse::release(&mki::Mouse::Right); }
+            }
         }
-        else { mki::Mouse::release(&mki::Mouse::Right); }
 
         thread::sleep(Duration::from_millis(delay));
     }
@@ -57,6 +60,7 @@ fn main () {
     let button = ["Left Click", "Right Click"];
 
     let mut delay_ms: i32 = 1;
+    let mut repeat_click: i32 = 1;
 
     bind_key(Keyboard::G, Action::handle_kb(|_| { click() } ));
     bind_key(Keyboard::Q, Action::handle_kb(|_| std::process::exit(0) ));
@@ -79,6 +83,12 @@ fn main () {
                     value2 += 1;
                     value2 %= 2;
                     toggle_button();
+                }
+
+                if ui.input_int("Clicks per cycle: ", &mut repeat_click).build() {
+                    if repeat_click < 1 { repeat_click = 1 }
+                    let mut new_rep = REPEAT.write().unwrap();
+                    *new_rep = repeat_click as u32;
                 }
 
                 ui.separator();
